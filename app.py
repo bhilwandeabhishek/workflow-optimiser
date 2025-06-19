@@ -175,5 +175,5 @@ def main():
    show_common_paths(df)
    show_step_durations(df)
 
-if __name__ == "_main_":
+if __name__ == "__main__":
    main()
