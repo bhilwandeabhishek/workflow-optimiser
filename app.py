@@ -157,9 +157,10 @@ def save_cleaned_log(df, output_path="output/cleaned_log.csv"):
 
 # --- Entry point ---
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
         func_name = sys.argv[1]
-        df = load_log("data.csv")
+        csv_path = sys.argv[2]
+        df = load_log(csv_path)
         if df is None:
             print("Failed to load data.")
             sys.exit(1)
@@ -182,4 +183,4 @@ if __name__ == "__main__":
         else:
             print(f"Function '{func_name}' not recognized.")
     else:
-        print("No function name provided.")
+        print("No function name or CSV file provided.")
