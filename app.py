@@ -1,3 +1,4 @@
+#import {neha ji bo ba de} from satara 
 import pandas as pd
 from collections import Counter
 import os
@@ -156,31 +157,30 @@ def save_cleaned_log(df, output_path="output/cleaned_log.csv"):
     print(f"Cleaned log saved to {output_path}")
 
 # --- Entry point ---
+def main():
+   print("Enterprise Workflow Optimizer (Full Mode)")
+   with open('uploads/latest.txt', 'r') as file:
+    content = file.read()
+    path = content
+    print(content)
+
+   if not os.path.exists(path):
+       print(f"File not found: {path}")
+       return
+
+   df = load_log(path)
+   if df is None:
+       return
+
+   df = prepare_data(df)
+
+   # Call all analytics functions
+   show_user_delays(df)
+   show_case_durations(df)
+   show_sla_violations(df)
+   show_common_paths(df)
+   show_step_durations(df)
+#    save_cleaned_log(df)
+
 if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        func_name = sys.argv[1]
-        csv_path = sys.argv[2]
-        df = load_log(csv_path)
-        if df is None:
-            print("Failed to load data.")
-            sys.exit(1)
-        df = prepare_data(df)
-
-        function_map = {
-            "common_paths": show_common_paths,
-            "step_durations": show_step_durations,
-            "user_delays": show_user_delays,
-            "sla_violations": show_sla_violations,
-            "case_durations": show_case_durations,
-            "clean_log": save_cleaned_log,
-        }
-
-        if func_name in function_map:
-            if func_name == "clean_log":
-                function_map[func_name](df)  # pass only df
-            else:
-                function_map[func_name](df)  # all other functions expect df only
-        else:
-            print(f"Function '{func_name}' not recognized.")
-    else:
-        print("No function name or CSV file provided.")
+   main()
