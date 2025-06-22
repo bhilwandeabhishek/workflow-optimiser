@@ -1,4 +1,4 @@
-#import {neha ji bo ba de} from satara 
+
 import pandas as pd
 from collections import Counter
 import os
