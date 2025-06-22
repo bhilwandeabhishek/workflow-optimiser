@@ -145,5 +145,43 @@
   "slowest_user": {
     "user": "Dev_John",
     "average_minutes": 807.0
-  }
+  },
+  "slowest_roles": [
+    {
+      "role": "Developer",
+      "slowest_user": "Dev_John",
+      "average_minutes": 807.0,
+      "case_ids": [
+        "TKT002",
+        "TKT004",
+        "TKT006"
+      ],
+      "more_cases": false
+    },
+    {
+      "role": "QA",
+      "slowest_user": "QA_Eva",
+      "average_minutes": 528.0,
+      "case_ids": [
+        "TKT002",
+        "TKT004",
+        "TKT006"
+      ],
+      "more_cases": false
+    },
+    {
+      "role": "Scrum Master",
+      "slowest_user": "Sara",
+      "average_minutes": 77.5,
+      "case_ids": [
+        "TKT001",
+        "TKT002",
+        "TKT003",
+        "TKT004",
+        "TKT005",
+        "TKT006"
+      ],
+      "more_cases": false
+    }
+  ]
 }

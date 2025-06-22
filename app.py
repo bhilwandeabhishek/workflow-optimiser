@@ -1,4 +1,3 @@
-
 import pandas as pd
 from collections import Counter
 import os
@@ -94,41 +93,80 @@ def show_user_delays(df):
             "more_cases": len(cases) > 5
         })
 
+    # Slowest user overall
     user_durations = df_filtered.groupby('user')['duration'].mean()
     slowest_user = user_durations.idxmax()
     slowest_time = round(user_durations.max().total_seconds() / 60, 2)
+
+    # Role-wise slowest user
+    role_user_group = df_filtered.groupby(['role', 'user'])
+
+    role_user_avg = role_user_group['duration'].mean().reset_index()
+    role_user_avg['avg_minutes'] = role_user_avg['duration'].dt.total_seconds() / 60
+
+    slowest_roles = []
+    for role in role_user_avg['role'].unique():
+        role_users = role_user_avg[role_user_avg['role'] == role]
+        slowest = role_users.sort_values(by='avg_minutes', ascending=False).iloc[0]
+        user_cases = df_filtered[(df_filtered['role'] == role) & (df_filtered['user'] == slowest['user'])]['case_id'].unique().tolist()
+
+        slowest_roles.append({
+            "role": role,
+            "slowest_user": slowest['user'],
+            "average_minutes": round(slowest['avg_minutes'], 2),
+            "case_ids": user_cases[:10],  # limit to 10 for readability
+            "more_cases": len(user_cases) > 10
+        })
 
     result = {
         "user_stats": detailed_stats,
         "slowest_user": {
             "user": slowest_user,
             "average_minutes": slowest_time
-        }
+        },
+        "slowest_roles": slowest_roles
     }
 
     save_json(result, "user_delays.json")
 
+
 def show_case_durations(df):
-    case_durations = df.groupby('case_id')['timestamp'].agg(['min', 'max'])
-    case_durations['total_duration'] = (case_durations['max'] - case_durations['min']).dt.total_seconds() / 60
+    df['duration_minutes'] = df['duration'].dt.total_seconds() / 60
+    df_filtered = df.dropna(subset=['duration_minutes', 'role'])
 
-    durations = [
-        {"case_id": idx, "total_minutes": round(row['total_duration'], 2)}
-        for idx, row in case_durations.iterrows()
-    ]
+    case_group = df_filtered.groupby(['case_id', 'role'])['duration_minutes'].sum().reset_index()
+    case_total = df_filtered.groupby('case_id')['duration_minutes'].sum()
 
-    slowest_case = case_durations['total_duration'].idxmax()
-    slowest_time = round(case_durations['total_duration'].max(), 2)
+    cases = []
+    for case_id in case_total.index:
+        case_roles = case_group[case_group['case_id'] == case_id]
+        role_data = [
+            {
+                "role": row['role'],
+                "total_minutes": round(row['duration_minutes'], 2)
+            }
+            for _, row in case_roles.iterrows()
+        ]
+        cases.append({
+            "case_id": case_id,
+            "total_minutes": round(case_total[case_id], 2),
+            "roles": role_data
+        })
+
+    # Identify the slowest case
+    slowest = max(cases, key=lambda x: x["total_minutes"])
 
     result = {
-        "cases": durations,
+        "cases": cases,
         "slowest_case": {
-            "case_id": slowest_case,
-            "duration_minutes": slowest_time
+            "case_id": slowest["case_id"],
+            "duration_minutes": slowest["total_minutes"]
         }
     }
 
     save_json(result, "case_durations.json")
+
+
 
 def show_sla_violations(df):
     df['duration_mins'] = df['duration'].dt.total_seconds() / 60
@@ -164,6 +202,7 @@ def main():
     path = content
     print(content)
 
+
    if not os.path.exists(path):
        print(f"File not found: {path}")
        return
@@ -180,7 +219,7 @@ def main():
    show_sla_violations(df)
    show_common_paths(df)
    show_step_durations(df)
-#    save_cleaned_log(df)
+   save_cleaned_log(df)
 
 if __name__ == "__main__":
    main()
